@@ -21,18 +21,15 @@ export class MasterViewComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => this.localVar = data,
-      error: (_err: any) => this.localVar = []
-    });
-    this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => this.weatherAPIWeatherForecast = data,
-      error: (_err: any) => this.weatherAPIWeatherForecast = []
-    });
-    this.weatherAPIService.getWeatherSummaryList().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => this.weatherAPIWeatherSummary = data,
-      error: (_err: any) => this.weatherAPIWeatherSummary = []
-    });
+    this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(
+      data => this.localVar = data
+    );
+    this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(
+      data => this.weatherAPIWeatherForecast = data
+    );
+    this.weatherAPIService.getWeatherSummaryList().pipe(takeUntil(this.destroy$)).subscribe(
+      data => this.weatherAPIWeatherSummary = data
+    );
     this.weatherAPIService.globalVar.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.localVar = [];
     });
@@ -44,37 +41,22 @@ export class MasterViewComponent implements OnInit, OnDestroy {
   }
 
   public weatherForecastRowAdded(args: IRowDataEventArgs) {
-    this.weatherAPIService.postWeatherForecast(args.rowData).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (_e) => {
-        this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data);
-      },
-      error: (_err) => {
-        // TODO: handle errors here.
-      },
-    });
+    this.weatherAPIService.postWeatherForecast(args.rowData).pipe(takeUntil(this.destroy$)).subscribe(
+      _ => this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data)
+    );
   }
 
   public weatherForecastRowEditDone(args: IGridEditDoneEventArgs) {
     if(args.isAddRow == false) {
-      this.weatherAPIService.putWeatherForecast(args.rowData).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (_e) => {
-          this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data);
-        },
-        error: (_err) => {
-          // TODO: handle errors here.
-        },
-      });
+      this.weatherAPIService.putWeatherForecast(args.rowData).pipe(takeUntil(this.destroy$)).subscribe(
+        _ => this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data)
+      );
     }
   }
 
   public weatherForecastRowDeleted(args: IRowDataEventArgs) {
-    this.weatherAPIService.deleteWeatherForecast(args.rowKey).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (_e) => {
-        this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data);
-      },
-      error: (_err) => {
-        // TODO: handle errors here.
-      },
-    });
+    this.weatherAPIService.deleteWeatherForecast(args.rowKey).pipe(takeUntil(this.destroy$)).subscribe(
+      _ => this.weatherAPIService.getWeatherForecastList().pipe(takeUntil(this.destroy$)).subscribe(data => this.localVar = data)
+    );
   }
 }

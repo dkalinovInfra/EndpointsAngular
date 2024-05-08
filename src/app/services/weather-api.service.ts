@@ -22,7 +22,7 @@ export class WeatherAPIService {
     if (!this._globalVar$) {
       this._globalVar$ = new BehaviorSubject<WeatherForecast | undefined>(undefined);
       this.stateService.id.pipe(
-        concatMap(() => this.getGlobalVar(this.stateService.id.value as any).pipe(take(1), catchError(() => of(undefined))))
+        concatMap(() => this.getGlobalVar(this.stateService.id.value as any).pipe(take(1)))
       ).subscribe(v => this._globalVar$.next(v));
     }
     return this._globalVar$;
@@ -40,7 +40,10 @@ export class WeatherAPIService {
   }
 
   public getWeatherForecastList(): Observable<WeatherForecast[]> {
-    return this.http.get<WeatherForecast[]>(`${API_ENDPOINT}/WeatherForecast`);
+    return this.http.get<WeatherForecast[]>(`${API_ENDPOINT}/WeatherForecast`)
+      .pipe(
+        catchError(this.handleError<WeatherForecast[]>('getWeatherForecastList', []))
+      );
   }
 
   public postWeatherForecast(data: any): Observable<WeatherForecast | undefined> {
@@ -48,7 +51,9 @@ export class WeatherAPIService {
       return of(undefined);
     }
     const body = data;
-    return this.http.post<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast`, body);
+    return this.http.post<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast`, body).pipe(
+      catchError(this.handleError<WeatherForecast | undefined>('postWeatherForecast', undefined))
+    );
   }
 
   public putWeatherForecast(data: any): Observable<WeatherForecast | undefined> {
@@ -56,24 +61,51 @@ export class WeatherAPIService {
       return of(undefined);
     }
     const body = data;
-    return this.http.put<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast`, body);
+    return this.http.put<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast`, body).pipe(
+      catchError(this.handleError<WeatherForecast | undefined>('putWeatherForecast', undefined))
+    );
   }
 
   public deleteWeatherForecast(id: number): Observable<WeatherForecast | undefined> {
     if (!id) {
       return of(undefined);
     }
-    return this.http.delete<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast/${id}`);
+    return this.http.delete<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast/${id}`).pipe(
+      catchError(this.handleError<WeatherForecast | undefined>('deleteWeatherForecast', undefined))
+    );
   }
 
   public getWeatherSummaryList(): Observable<WeatherSummary[]> {
-    return this.http.get<WeatherSummary[]>(`${API_ENDPOINT}/WeatherSummary`);
+    return this.http.get<WeatherSummary[]>(`${API_ENDPOINT}/WeatherSummary`).pipe(
+      catchError(this.handleError<WeatherSummary[]>('getWeatherSummaryList', []))
+    );
   }
 
   public getGlobalVar(id: number): Observable<WeatherForecast | undefined> {
     if (!id) {
       return of(undefined);
     }
-    return this.http.get<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast/${id}`);
+    return this.http.get<WeatherForecast | undefined>(`${API_ENDPOINT}/WeatherForecast/${id}`).pipe(
+      catchError(this.handleError<WeatherForecast | undefined>('getGlobalVar', undefined))
+    );
+  }
+
+  /**
+  * Handle Http operation that failed.
+  * Let the app continue.
+  *
+  * @param operation - name of the operation that failed
+  * @param result - optional value to return as the observable result
+  */
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      // TODO: better job of transforming error for user consumption
+      console.log(`${operation} failed: ${error.message}`);
+      // TODO: send the error to remote logging infrastructure
+      console.error(error); // log to console instead
+
+      // Let the app keep running by returning an empty result.
+      return of(result as T);
+    };
   }
 }
